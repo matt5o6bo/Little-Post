@@ -1,0 +1,11 @@
+import { mkdirSync, existsSync, rmSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { root } from './cloudflare-cli.mjs';
+const files = ['app','db','drizzle','public','scripts','worker','package.json','package-lock.json','tsconfig.json','next.config.ts','postcss.config.mjs','cloudflare-env.d.ts','drizzle.config.ts','vite.config.ts','wrangler.json','.gitignore','README.md'];
+for (const name of files) if (!existsSync(root+name)) throw new Error('Missing export file: '+name);
+mkdirSync(root+'outputs', {recursive:true});
+const zip = root+'outputs/little-post-cloudflare.zip';
+if (existsSync(zip)) rmSync(zip);
+const result = spawnSync('zip', ['-qr', zip, ...files], {cwd:root,stdio:'inherit'});
+if (result.status !== 0) throw new Error('ZIP export failed. Install zip or compress the listed source files manually.');
+console.log(zip);

@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.vinext/
+.wrangler/
+.next/
+.dev.vars*
+.env*
+*.tsbuildinfo
+next-env.d.ts
+outputs/
+.DS_Store

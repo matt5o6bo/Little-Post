@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1792652012953,
+      "tag": "0000_boring_wallop",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1792653287238,
+      "tag": "0001_damp_dakota_north",
+      "breakpoints": true
+    }
+  ]
+}
