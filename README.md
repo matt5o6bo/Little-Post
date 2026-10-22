@@ -18,6 +18,21 @@ npm ci
 
 The checked-in `wrangler.json` targets the existing Little Post deployment. Its account and resource IDs are not credentials; deployments still require access to that Cloudflare account. The admin key, Cloudflare credentials, letters, and uploaded media are not included. Publishing commits to GitHub does not deploy the website automatically; deployment remains an explicit `npm run deploy` step.
 
+### Connect GitHub to the existing Cloudflare Worker
+
+Cloudflare Workers Builds can publish new pushes to this same Worker automatically. In your personal Cloudflare dashboard, open **Workers & Pages → little-post → Settings → Builds → Connect**, authorize GitHub, and select `matt5o6bo/Little-Post`. Use these settings:
+
+| Setting | Value |
+| --- | --- |
+| Production branch | `main` |
+| Root directory | Repository root (`/`) |
+| Build command | `npm run build` |
+| Deploy command | `npx wrangler deploy --config dist/server/wrangler.json` |
+
+Select the existing `little-post` Worker so its address and storage bindings stay with the project. The Worker name in Cloudflare and `wrangler.json` must match. Cloudflare provisions a build API token during the connection flow; do not add your admin key to build settings. After connecting, push a source change to `main` and check the **Builds** tab for a successful deployment. The connection alone may not publish the current commit until a new push occurs.
+
+The deploy command above publishes application code. If a future change adds a D1 migration, apply it separately with `npm run db:remote` before deploying code that needs the new schema.
+
 If you are the owner restoring this project on another computer, sign in with `npm run login:cloudflare` and use the existing configuration. You do not need to recreate storage or rotate your saved admin key. The account and storage setup sections below document the initial setup.
 
 ## 1. Create your personal account
