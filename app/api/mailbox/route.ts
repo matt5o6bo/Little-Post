@@ -8,6 +8,6 @@ export async function GET(request: Request) {
     const mailbox = await mailboxFor(request);
     if (shared && !mailbox) return json({ error: 'This mailbox link is not available. Ask the sender for their latest link.' }, 404);
     const rows = mailbox ? (await storage().db.prepare('SELECT * FROM letters WHERE mailbox_id = ? ORDER BY created_at DESC').bind(mailbox.id).all()).results : [];
-    return json({ signedIn: !!user, canEdit: !!user && !shared, shareKey: !shared ? mailbox?.share_key : undefined, letters: rows.map(row => ({ ...row, media: JSON.parse(row.media as string) })) });
+    return json({ signedIn: !!user, canEdit: !!user && !shared, canUpload: !!mailbox && (!!user || shared), shareKey: !shared ? mailbox?.share_key : undefined, letters: rows.map(row => ({ ...row, media: JSON.parse(row.media as string) })) });
   } catch { return json({ error: 'We could not load the mailbox. Please try again.' }, 503); }
 }

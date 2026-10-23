@@ -1,14 +1,21 @@
 import { getAdminUser } from '../../admin-auth';
-import { ensureMailbox, json, sameOrigin, storage, type Media } from '../../lib/mail';
+import { ensureMailbox, json, sameOrigin, storage, type Mailbox, type Media } from '../../lib/mail';
 export const dynamic = 'force-dynamic';
 const MAX = 25 * 1024 * 1024;
 const allowed = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm']);
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return json({ error: 'Please send letters from this website.' }, 403);
   const user = await getAdminUser();
-  if (!user) return json({ error: 'Sign in before adding a letter.' }, 401);
+  const key = request.headers.get('X-Mailbox-Key');
+  if (!user && !key) return json({ error: 'Open your private mailbox link to add a letter.' }, 401);
+  if (!user && !/^[a-f0-9]{64}$/.test(key || '')) return json({ error: 'This mailbox link is not available.' }, 404);
   const written: string[] = [];
   try {
+    const { db, bucket } = storage();
+    const mailbox = user
+      ? await ensureMailbox(user.userId)
+      : await db.prepare('SELECT * FROM mailboxes WHERE share_key = ?').bind(key).first<Mailbox>();
+    if (!mailbox) return json({ error: 'This mailbox link is not available.' }, 404);
     if (Number(request.headers.get('content-length')) > MAX + 65536) return json({ error: 'Please keep each letter under 25 MB.' }, 413);
     // Bound streamed and chunked uploads without retaining an extra full-body copy.
     if (!request.body) return json({ error: 'The letter is empty.' }, 400);
@@ -33,8 +40,7 @@ export async function POST(request: Request) {
     if (!title || !recipient || !sender || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(date))) return json({ error: 'Add a title, sender, recipient, and valid date.' }, 400);
     if (!note && !files.length) return json({ error: 'Add a note, a photo, or a video to your letter.' }, 400);
     if (files.length > 12 || files.some(f => !allowed.has(f.type)) || files.reduce((n, f) => n + f.size, 0) > MAX) return json({ error: 'Use up to 12 JPG, PNG, WebP, GIF, MP4, or WebM files, totaling 25 MB or less.' }, 400);
-    const mailbox = await ensureMailbox(user.userId), id = crypto.randomUUID(), media: Media[] = [];
-    const { db, bucket } = storage();
+    const id = crypto.randomUUID(), media: Media[] = [];
     for (const file of files) {
       const mediaId = crypto.randomUUID(), key = `${mailbox.id}/${id}/${mediaId}`;
       await bucket.put(key, file.stream(), { httpMetadata: { contentType: file.type } });

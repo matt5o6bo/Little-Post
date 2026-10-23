@@ -93,10 +93,10 @@ If you cancel before typing `SAVED`, existing access is not changed. Never run a
 
 1. Add a title, recipient, sender, date, and photos, videos, or an optional note.
 2. Choose **Put in mailbox**. Each letter accepts up to 12 JPG, PNG, WebP, GIF, MP4, or WebM files totaling 25 MB.
-3. Choose **Share mailbox** and copy the recipient link.
+3. Choose **Share mailbox** and copy the recipient link. Your friend can use **Add a letter** from that link without your admin key.
 4. Test that link in a private browser window before sending it to your friend.
 
-The recipient does not need an account. Anyone with that link can read the mailbox, so share it only with your intended reader. They cannot upload or delete letters. Keep the admin key private. The root URL alone does not expose your letters.
+The recipient does not need an account. Anyone with that link can read the mailbox and upload letters, so share it only with your intended reader. They can add letters without signing in, but cannot delete them. Keep the admin key private. The root URL alone does not expose your letters.
 
 For broadly compatible videos, use H.264 MP4. Real media decoding and mobile-device playback should be checked with your own files.
 
@@ -137,7 +137,7 @@ Validated here: TypeScript, production build, local migrations, local API integr
 - One sender account with a generated 256-bit admin key; only its digest is stored as a Worker secret.
 - Random session cookies (`HttpOnly`, `Secure`, `SameSite=Strict`) with hashed tokens and expiry in D1.
 - Same-origin mutation checks and ten login attempts per IP per minute.
-- Random, read-only recipient keys; no public mailbox listing.
+- Random recipient keys grant read and upload access; only the admin can delete letters, and there is no public mailbox listing.
 - No dependency on trusted `oai-authenticated-*` headers.
 
 The Cloudflare account controls billing, deployment, and data. Its account recovery is also how you recover a lost admin key by generating a new one.
